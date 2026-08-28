@@ -1,0 +1,23 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: legal-pipeline-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - LLM_PROVIDER=
+      - GEMINI_API_KEY=
+      - GEMINI_MODEL=
+      - OPENAI_API_KEY=
+      - OPENAI_MODEL=
+      - DATABASE_URL=sqlite+aiosqlite:///./data/contracts.db
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
