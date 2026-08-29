@@ -10,8 +10,6 @@ class JobResponse(BaseModel):
     """Schema for returning asynchronous extraction job status and result."""
     id: str = Field(..., description="Unique UUID of the background job")
     status: JobStatus = Field(..., description="Current status of the job: PENDING, PROCESSING, COMPLETED, FAILED")
-    provider: Optional[str] = Field(default=None, description="LLM provider used")
-    model: Optional[str] = Field(default=None, description="Model used")
     contract_id: Optional[int] = Field(default=None, description="ID of the created contract upon successful extraction")
     contract: Optional[ContractResponse] = Field(default=None, description="Full contract details if completed")
     error_message: Optional[str] = Field(default=None, description="Error message if extraction or validation failed")

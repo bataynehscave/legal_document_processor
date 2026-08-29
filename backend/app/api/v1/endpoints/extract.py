@@ -36,8 +36,6 @@ async def extract_contract(
     contract = await ContractService.process_and_store_contract(
         db=db,
         raw_text=payload.text,
-        provider=payload.provider,
-        model=payload.model,
     )
     return ContractResponse.model_validate(contract)
 
@@ -63,7 +61,5 @@ async def extract_contract_async(
     job = await job_queue.submit_job(
         db=db,
         raw_text=payload.text,
-        provider=payload.provider,
-        model=payload.model,
     )
     return JobResponse.model_validate(job)

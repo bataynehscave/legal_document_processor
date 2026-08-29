@@ -19,7 +19,7 @@ class JobQueueManager:
     """Asynchronous background worker queue for processing legal document extraction jobs."""
 
     def __init__(self) -> None:
-        self._queue: Optional[asyncio.Queue[Tuple[str, str, Optional[str], Optional[str]]]] = None
+        self._queue: Optional[asyncio.Queue[Tuple[str, str]]] = None
         self._worker_tasks: List[asyncio.Task] = []
         self._running: bool = False
 
@@ -76,23 +76,19 @@ class JobQueueManager:
         self,
         db: AsyncSession,
         raw_text: str,
-        provider: Optional[str] = None,
-        model: Optional[str] = None,
     ) -> ExtractionJob:
         """Create job record and enqueue for background execution."""
         job_id = str(uuid.uuid4())
         job = ExtractionJob(
             id=job_id,
             status=JobStatus.PENDING.value,
-            provider=provider or settings.LLM_PROVIDER,
-            model=model or (settings.GEMINI_MODEL if (provider or settings.LLM_PROVIDER) == "gemini" else settings.OPENAI_MODEL),
         )
         db.add(job)
         await db.commit()
         await db.refresh(job)
 
         queue = self._get_queue()
-        await queue.put((job_id, raw_text, provider, model))
+        await queue.put((job_id, raw_text))
         logger.info("Enqueued extraction job ID=%s", job_id)
         return job
 
@@ -122,17 +118,17 @@ class JobQueueManager:
     async def _worker_loop(
         self,
         worker_id: int,
-        queue: asyncio.Queue[Tuple[str, str, Optional[str], Optional[str]]],
+        queue: asyncio.Queue[Tuple[str, str]],
     ) -> None:
         logger.info("Worker-%d started listening for jobs.", worker_id)
         while self._running:
             try:
-                job_id, raw_text, provider, model = await queue.get()
+                job_id, raw_text = await queue.get()
             except asyncio.CancelledError:
                 break
 
             try:
-                await self._process_job(job_id, raw_text, provider, model)
+                await self._process_job(job_id, raw_text)
             except Exception as e:
                 logger.exception("Unexpected error in worker-%d processing job %s: %s", worker_id, job_id, e)
             finally:
@@ -142,8 +138,6 @@ class JobQueueManager:
         self,
         job_id: str,
         raw_text: str,
-        provider: Optional[str],
-        model: Optional[str],
     ) -> None:
         async with AsyncSessionLocal() as session:
             # 1. Mark PROCESSING
@@ -159,8 +153,6 @@ class JobQueueManager:
                 contract = await ContractService.process_and_store_contract(
                     db=session,
                     raw_text=raw_text,
-                    provider=provider,
-                    model=model,
                 )
                 job.status = JobStatus.COMPLETED.value
                 job.contract_id = contract.id

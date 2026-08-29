@@ -88,19 +88,14 @@ class ContractService:
         cls,
         db: AsyncSession,
         raw_text: str,
-        provider: Optional[str] = None,
-        model: Optional[str] = None,
         llm_client: Optional[BaseLLMClient] = None,
     ) -> Contract:
         """Run the extraction pipeline, perform deterministic validation, and persist valid contract."""
-        client = llm_client or get_llm_client(provider)
-        logger.info("Triggering LLM extraction with provider=%s, model=%s", provider, model)
+        client = llm_client or get_llm_client()
+        logger.info("Triggering LLM extraction via Gemini")
 
         # Step 1: LLM Structured Output extraction
-        extraction: LLMContractExtraction = await client.extract_contract_data(
-            text=raw_text,
-            model=model,
-        )
+        extraction: LLMContractExtraction = await client.extract_contract_data(text=raw_text)
 
         # Step 2: Deterministic business calculations & validation
         duration_days = cls.validate_and_compute_duration(extraction)

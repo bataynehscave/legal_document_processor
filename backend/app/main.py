@@ -69,7 +69,7 @@ def create_application() -> FastAPI:
         return {
             "status": "healthy",
             "version": settings.VERSION,
-            "provider": settings.LLM_PROVIDER,
+            "provider": "gemini",
         }
 
     return app

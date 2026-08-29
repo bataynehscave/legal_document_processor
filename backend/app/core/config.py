@@ -18,16 +18,9 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = "sqlite+aiosqlite:///./contracts.db"
 
-    # LLM Settings
-    LLM_PROVIDER: Literal["gemini", "openai"] = "gemini"
-
     # Gemini Settings (Default: Gemini 3.7 Flash)
     GEMINI_API_KEY: Optional[str] = None
     GEMINI_MODEL: str = "gemini-3.7-flash"
-
-    # OpenAI Settings
-    OPENAI_API_KEY: Optional[str] = None
-    OPENAI_MODEL: str = "gpt-4o-mini"
 
     # Resilience & Timeouts
     LLM_MAX_RETRIES: int = Field(default=3, ge=1, le=10)

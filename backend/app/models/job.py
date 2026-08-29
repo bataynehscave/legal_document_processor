@@ -20,8 +20,6 @@ class ExtractionJob(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, index=True)
     status: Mapped[str] = mapped_column(String(20), default=JobStatus.PENDING.value, index=True, nullable=False)
-    provider: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    model: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     contract_id: Mapped[Optional[int]] = mapped_column(
         Integer,
         ForeignKey("contracts.id", ondelete="SET NULL"),

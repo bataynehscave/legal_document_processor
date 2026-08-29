@@ -43,14 +43,6 @@ class ExtractRequest(BaseModel):
         max_length=50000,
         description="Raw unstructured text summary or full text of the legal contract/lease.",
     )
-    provider: Optional[Literal["gemini", "openai"]] = Field(
-        default=None,
-        description="Optional LLM provider override ('gemini' or 'openai'). Defaults to server configuration.",
-    )
-    model: Optional[str] = Field(
-        default=None,
-        description="Optional LLM model override (e.g., 'gemini-2.5-flash', 'gpt-4o-mini', 'gpt-4o').",
-    )
 
     @field_validator("text")
     @classmethod

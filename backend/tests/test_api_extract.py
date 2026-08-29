@@ -60,31 +60,4 @@ async def test_extract_valid_contract_section_5_sample(client: AsyncClient) -> N
     assert get_res.json()["lessor"] == "Apex Holdings LLC"
 
 
-@pytest.mark.asyncio
-async def test_extract_with_provider_and_model_override(client: AsyncClient) -> None:
-    """Test provider and model override parameters in extract request."""
-    mock_extracted = LLMContractExtraction(
-        lessor="Global Towers Ltd",
-        lessee="Acme Corp",
-        commencement_date=date(2025, 1, 1),
-        expiration_date=date(2026, 1, 1),
-        monthly_rent=5000.00,
-        currency="USD",
-        termination_notice_period=30,
-    )
 
-    mock_client = MockLLMClient(response=mock_extracted)
-
-    with patch("app.services.contract_service.get_llm_client", return_value=mock_client) as mock_factory:
-        response = await client.post(
-            "/api/v1/extract",
-            json={
-                "text": "Standard commercial agreement between Global Towers Ltd and Acme Corp...",
-                "provider": "openai",
-                "model": "gpt-4o-mini",
-            },
-        )
-
-    assert response.status_code == 201
-    mock_factory.assert_called_once_with("openai")
-    assert response.json()["contract_duration_days"] == 365
