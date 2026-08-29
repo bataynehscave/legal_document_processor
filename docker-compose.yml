@@ -26,6 +26,8 @@ services:
     container_name: legal-pipeline-frontend
     ports:
       - "3000:3000"
+    env_file:
+      - ./frontend/.env
     depends_on:
       - backend
     restart: unless-stopped
