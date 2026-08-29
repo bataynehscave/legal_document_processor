@@ -15,6 +15,8 @@ from app.services.job_queue import job_queue
 import app.services.job_queue as job_queue_module
 from app.services.llm.base import BaseLLMClient
 
+from sqlalchemy.pool import StaticPool
+
 # Test SQLite in-memory database
 TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 
@@ -22,6 +24,7 @@ test_engine = create_async_engine(
     TEST_DB_URL,
     echo=False,
     future=True,
+    poolclass=StaticPool,
     connect_args={"check_same_thread": False},
 )
 
