@@ -44,5 +44,12 @@ class Settings(BaseSettings):
     # Async Queue Workers
     QUEUE_MAX_CONCURRENCY: int = Field(default=2, ge=1, le=10)
 
+    # CORS
+    FRONTEND_CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173"
+
+    @property
+    def cors_origins_list(self) -> list[str]:
+        return [origin.strip() for origin in self.FRONTEND_CORS_ORIGINS.split(",") if origin.strip()]
+
 
 settings = Settings()

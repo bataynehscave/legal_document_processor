@@ -19,6 +19,16 @@ htmlcov/
 *.db
 *.sqlite
 *.sqlite3
+*.db-wal
+*.db-shm
+backend/data/
+
+# Frontend / Node.js
+node_modules/
+dist/
+dist-ssr/
+*.local
+.npm/
 
 # OS Specific
 .DS_Store

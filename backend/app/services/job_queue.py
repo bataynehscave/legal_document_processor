@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.database import AsyncSessionLocal
-from app.core.exceptions import AppException, ContractNotFoundError
+from app.core.exceptions import AppException, JobNotFoundError
 from app.models.job import ExtractionJob, JobStatus
 from app.services.contract_service import ContractService
 
@@ -28,12 +28,33 @@ class JobQueueManager:
             self._queue = asyncio.Queue()
         return self._queue
 
+    async def _cleanup_stale_jobs(self) -> None:
+        """Mark any PENDING or PROCESSING jobs as FAILED on startup since their in-memory state is lost."""
+        async with AsyncSessionLocal() as session:
+            stmt = select(ExtractionJob).where(
+                ExtractionJob.status.in_([JobStatus.PENDING.value, JobStatus.PROCESSING.value])
+            )
+            result = await session.execute(stmt)
+            stale_jobs = result.scalars().all()
+            
+            if stale_jobs:
+                logger.info("Found %d stale jobs from previous run. Marking as FAILED.", len(stale_jobs))
+                for job in stale_jobs:
+                    job.status = JobStatus.FAILED.value
+                    job.error_code = "INTERRUPTED_ERROR"
+                    job.error_message = "Job was interrupted due to server restart and could not be recovered."
+                    job.completed_at = datetime.now(timezone.utc)
+                await session.commit()
+
     async def start(self) -> None:
-        """Start background worker tasks."""
+        """Start background worker tasks and cleanup stale jobs."""
         if self._running:
             return
         self._running = True
         self._queue = asyncio.Queue()
+        
+        await self._cleanup_stale_jobs()
+        
         concurrency = settings.QUEUE_MAX_CONCURRENCY
         logger.info("Starting %d background extraction queue workers...", concurrency)
         for i in range(concurrency):
@@ -81,7 +102,7 @@ class JobQueueManager:
         result = await db.execute(stmt)
         job = result.scalar_one_or_none()
         if not job:
-            raise ContractNotFoundError(contract_id=0)
+            raise JobNotFoundError(job_id=job_id)
         return job
 
     async def list_jobs(self, db: AsyncSession, skip: int = 0, limit: int = 50) -> Tuple[List[ExtractionJob], int]:

@@ -18,7 +18,6 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 # Copy application source code
 COPY app/ ./app/
-COPY README.md .
 
 # Create non-root user for security
 RUN useradd -m -u 1000 appuser && \

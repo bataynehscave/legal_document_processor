@@ -15,7 +15,7 @@ class Contract(Base):
     commencement_date: Mapped[date] = mapped_column(Date, nullable=False)
     expiration_date: Mapped[date] = mapped_column(Date, nullable=False)
     monthly_rent: Mapped[float] = mapped_column(Float, nullable=False)
-    currency: Mapped[str] = mapped_column(String(10), nullable=False)
+    currency: Mapped[str] = mapped_column(String(10), nullable=False, index=True)
     termination_notice_period: Mapped[int] = mapped_column(Integer, nullable=False)
     contract_duration_days: Mapped[int] = mapped_column(Integer, nullable=False)
     raw_text: Mapped[str] = mapped_column(Text, nullable=False)

@@ -39,6 +39,17 @@ class ContractNotFoundError(AppException):
         )
 
 
+class JobNotFoundError(AppException):
+    """Raised when a requested job is not found."""
+    def __init__(self, job_id: str) -> None:
+        super().__init__(
+            message=f"Job with ID {job_id} not found.",
+            status_code=404,
+            error_code="JOB_NOT_FOUND",
+            details={"job_id": job_id},
+        )
+
+
 class BusinessRuleValidationError(AppException):
     """Raised when extracted contract data violates business domain rules (HTTP 422)."""
     def __init__(self, message: str, details: Optional[Any] = None) -> None:
